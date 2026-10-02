@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15142B">
+<title>GPT Sol 5.6</title>
+<style>
+:root{--bg:#15142B;--panel:#1E1D3A;--line:#2E2C52;--text:#EEEAFB;--mute:#9C98C4;--sun:#FFB547;--sun2:#FF7A45;--user:#3A2F4F;box-sizing:border-box}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sun{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE08A,var(--sun) 45%,var(--sun2));box-shadow:0 0 18px rgba(255,181,71,.55);flex:none}
+header h1{font-size:18px;font-weight:700;letter-spacing:.2px;flex:1}
+.ib{padding:8px 12px;border-radius:10px;color:var(--mute);font-size:14px}
+.ib:hover{background:var(--panel);color:var(--text)}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.m{max-width:88%;padding:10px 14px;border-radius:16px;overflow-wrap:anywhere;word-break:break-word}
+.m.u{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px}
+.m.b{align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:4px}
+.m.e{align-self:flex-start;background:#3B1F2B;border:1px solid #7A3347;font-size:14px}
+.m pre{background:#0F0E20;border-radius:10px;padding:10px;margin:8px 0;overflow-x:auto;font-size:13px}
+.m code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+.m :not(pre)>code{background:#0F0E20;padding:1px 5px;border-radius:5px}
+.dots{display:inline-flex;gap:5px;padding:4px 0}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--sun);animation:b 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+#empty{margin:auto;text-align:center;padding:24px;max-width:340px}
+#empty .sun{width:84px;height:84px;margin:0 auto 18px;box-shadow:0 0 50px rgba(255,181,71,.5);animation:rise 1.2s ease-out}
+@keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+#empty h2{font-size:22px;margin-bottom:4px}
+#empty p{color:var(--mute);margin-bottom:16px}
+.chips{display:flex;flex-direction:column;gap:8px}
+.chip{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);text-align:left;font-size:15px}
+.chip:hover{border-color:var(--sun)}
+form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--bg)}
+textarea{flex:1;resize:none;max-height:140px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font:inherit}
+textarea:focus{outline:none;border-color:var(--sun)}
+#send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--sun),var(--sun2));color:#2B1500;font-weight:700;font-size:20px;flex:none}
+#send:disabled{opacity:.45}
+dialog{margin:auto;width:min(92vw,440px);background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px}
+dialog::backdrop{background:rgba(5,4,15,.7)}
+dialog h2{font-size:18px;margin-bottom:12px}
+label{display:block;font-size:14px;color:var(--mute);margin:12px 0 4px}
+input,#sys{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;font-size:15px}
+#sys{resize:vertical;min-height:64px}
+.note{font-size:13px;color:var(--mute);margin-top:12px}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn{padding:9px 16px;border-radius:10px;border:1px solid var(--line)}
+.btn.p{background:linear-gradient(135deg,var(--sun),var(--sun2));color:#2B1500;font-weight:600;border:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="sun" aria-hidden="true"></div>
+  <h1>GPT Sol 5.6</h1>
+  <button class="ib" id="clear" type="button">Clear chat</button>
+  <button class="ib" id="open" type="button">Settings</button>
+</header>
+
+<main id="log" aria-live="polite"></main>
+
+<form id="f">
+  <textarea id="t" rows="1" placeholder="Message GPT Sol 5.6" aria-label="Message"></textarea>
+  <button id="send" type="submit" aria-label="Send message">&#8593;</button>
+</form>
+
+<dialog id="d">
+  <h2>Settings</h2>
+  <label for="url">API URL</label>
+  <input id="url" autocomplete="off" placeholder="https://router.bynara.id/v1">
+  <label for="model">Model name</label>
+  <input id="model" autocomplete="off" placeholder="gpt-5.6-luna">
+  <label for="key">API key</label>
+  <input id="key" type="password" autocomplete="off" placeholder="Paste a new key">
+  <label for="sys">Instructions (optional)</label>
+  <textarea id="sys" placeholder="You are a helpful assistant."></textarea>
+  <p class="note">Your key is saved only on this device. It works with any provider that uses the OpenAI chat format.</p>
+  <div class="row">
+    <button class="btn" id="cancel" type="button">Cancel</button>
+    <button class="btn p" id="save" type="button">Save settings</button>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var log=$('log'),t=$('t'),send=$('send'),d=$('d');
+  var S={url:'https://router.bynara.id/v1',model:'gpt-5.6-luna',key:'',sys:''};
+  var H=[];
+  function ld(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}}
+  function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  S=Object.assign(S,ld('sol_cfg2',{}));H=ld('sol_hist',[]);
+
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function fmt(s){
+    return esc(s).split('```').map(function(p,i){
+      if(i%2)return '<pre><code>'+p.replace(/^[\w+-]*\n/,'')+'</code></pre>';
+      return p.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+    }).join('');
+  }
+  function add(cls,html){
+    var e=$('empty');if(e)e.remove();
+    var n=document.createElement('div');n.className='m '+cls;n.innerHTML=html;
+    log.appendChild(n);log.scrollTop=log.scrollHeight;return n;
+  }
+  function empty(){
+    log.innerHTML='<div id="empty"><div class="sun" aria-hidden="true"></div><h2>What are you working on?</h2><p>Ask a question, draft a message, or work through a problem.</p><div class="chips">'+
+    ['Explain a topic simply','Write a short email for me','Help me plan my week'].map(function(c){return '<button class="chip" type="button">'+c+'</button>'}).join('')+'</div></div>';
+    Array.prototype.forEach.call(log.querySelectorAll('.chip'),function(b){b.onclick=function(){t.value=b.textContent;ask()}});
+  }
+  function render(){
+    log.innerHTML='';
+    if(!H.length){empty();return}
+    H.forEach(function(m){add(m.role==='user'?'u':'b',fmt(m.content))});
+  }
+  function openSettings(){
+    $('url').value=S.url;$('model').value=S.model;$('key').value=S.key;$('sys').value=S.sys;
+    if(d.showModal)d.showModal();else d.setAttribute('open','');
+  }
+  async function ask(){
+    var text=t.value.trim();if(!text||send.disabled)return;
+    if(!S.key||!S.model){add('e','Add your API key and model name in Settings first.');openSettings();return}
+    t.value='';t.style.height='auto';
+    H.push({role:'user',content:text});sv('sol_hist',H);
+    add('u',fmt(text));
+    send.disabled=true;
+    var wait=add('b','<span class="dots"><i></i><i></i><i></i></span>');
+    var msgs=(S.sys?[{role:'system',content:S.sys}]:[]).concat(H.slice(-30));
+    try{
+      var u=S.url.replace(/\/+$/,'');if(!/\/chat\/completions$/.test(u))u+='/chat/completions';
+      var r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.key},body:JSON.stringify({model:S.model,messages:msgs})});
+      var j=await r.json().catch(function(){return {}});
+      if(!r.ok)throw new Error((j.error&&j.error.message)||('Request failed with status '+r.status));
+      var out=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;
+      if(!out)throw new Error('The model returned an empty reply. Check the model name in Settings.');
+      H.push({role:'assistant',content:out});sv('sol_hist',H);
+      wait.innerHTML=fmt(out);
+    }catch(err){
+      H.pop();sv('sol_hist',H);
+      wait.className='m e';
+      wait.textContent=(err&&err.name==='TypeError')?'Could not reach the server. Check your connection and the API URL. If both are right, the provider may block requests from a web page (CORS); the installed APK avoids this.':((err&&err.message)||'Something went wrong.');
+    }
+    send.disabled=false;log.scrollTop=log.scrollHeight;
+  }
+  $('f').onsubmit=function(e){e.preventDefault();ask()};
+  t.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!/Android|iPhone|iPad/i.test(navigator.userAgent)){e.preventDefault();ask()}});
+  t.addEventListener('input',function(){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,140)+'px'});
+  $('open').onclick=openSettings;
+  $('cancel').onclick=function(){d.close()};
+  $('save').onclick=function(){
+    S={url:$('url').value.trim()||'https://router.bynara.id/v1',model:$('model').value.trim(),key:$('key').value.trim(),sys:$('sys').value.trim()};
+    sv('sol_cfg2',S);d.close();
+  };
+  $('clear').onclick=function(){H=[];sv('sol_hist',H);render()};
+  render();
+  if(!S.key)setTimeout(openSettings,400);
+})();
+</script>
+</body>
+</html>
